@@ -40,12 +40,12 @@ const Main = () => {
 
     if (selectedItems?.includes(item)) {
       setSelectedItems(selectedItems?.filter((i) => i !== item));
-      setSelectedWordsKey(selectedWordsKey?.filter((i) => i !== item));
       setSelectedWords(selectedItems?.filter((i) => i !== item));
+      setSelectedWordsKey(selectedWordsKey?.filter((i) => i !== key));
     } else {
       setSelectedItems([...selectedItems, item]);
-      setSelectedWordsKey([...selectedWordsKey, key]);
       setSelectedWords([...selectedWords, item]);
+      setSelectedWordsKey([...selectedWordsKey, key]);
     }
   };
 
@@ -167,7 +167,7 @@ const Main = () => {
                       <p
                         key={key}
                         className={`text-sm cursor-pointer hover:underline ${
-                          isWordSelected && "bg-blue-500 text-white  hover:no-underline rounded-sm cursor-not-allowed"
+                          isWordSelected && "bg-blue-500 text-white  hover:no-underline rounded-sm "
                         }`}
                         onClick={() => handleClick(item, key)}
                       >
@@ -191,7 +191,7 @@ const Main = () => {
               {labelledData.slice(0, 2).map((item, i) =>
                 Object.entries(item).map(([key, value]) => (
                   <div className="space-y-6 text-white text-[15px] ">
-                    <div className="space-x-4 flex justify-between max-w-[270px]">
+                    <div className="space-x-4 flex justify-between max-w-xs">
                       <span className="bg-blue-600 p-1.5 px-2.5 rounded-md flex-1">{key}</span>
                       <span className="border border-gray-600 text-black p-1.5 px-2.5 rounded-md flex-1">
                         {value ? value : "null"}
@@ -206,7 +206,7 @@ const Main = () => {
               {labelledData?.slice(2, keywords.length).map((item, i) =>
                 Object.entries(item).map(([key, value]) => (
                   <div className="space-y-6 text-white text-[15px]">
-                    <div className="space-x-4 flex justify-between max-w-[270px]">
+                    <div className="space-x-4 flex justify-between max-w-xs">
                       <span className="bg-blue-600 p-1.5 px-2.5 rounded-md flex-1">{key}</span>
                       <span className="border border-gray-600 text-black p-1.5 px-2.5 rounded-md flex-1">
                         {value ? value : "null"}
@@ -218,7 +218,12 @@ const Main = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <button className="bg-green-600 font-medium  p-1 px-3 text-white rounded-md mr-4">Save</button>
+            <button
+              className="bg-green-600 font-medium  p-1 px-3 text-white rounded-md mr-4"
+              onClick={() => alert("Labelling done Successfully")}
+            >
+              Save
+            </button>
             <button className="bg-red-600 font-medium  p-1 px-3 text-white rounded-md" onClick={handleDelete}>
               Cancel
             </button>
