@@ -31,12 +31,9 @@ const Main = () => {
   const mainArray = myArray?.map((str) => str.slice(1, -1).split(" ")); // converted each string in to array also removing " from beginning and ending
 
   const [selectedItems, setSelectedItems] = useState([]);
-
+  console.log(labelChip);
   const handleClick = (item, key) => {
     setOpenSnack(true);
-    // if (selectedWords.includes(item)) {
-    //   return;
-    // }
 
     if (selectedItems?.includes(item)) {
       setSelectedItems(selectedItems?.filter((i) => i !== item));
@@ -75,9 +72,11 @@ const Main = () => {
     setLabelChip(keywords[0].label);
     setLabelledData([]);
     setSelectedItems([]);
+    setSelectedWordsKey([]);
   };
 
-  console.log(selectedWordsKey);
+  console.log(labelledData);
+
   return (
     <div className="flex p-10 gap-6 2xl:gap-14 ">
       <div className="dragger-area flex-1">
@@ -169,7 +168,11 @@ const Main = () => {
                         className={`text-sm cursor-pointer hover:underline ${
                           isWordSelected && "bg-blue-500 text-white  hover:no-underline rounded-sm "
                         }`}
-                        onClick={() => handleClick(item, key)}
+                        onClick={() => {
+                          if (!isWordSelected) {
+                            handleClick(item, key);
+                          }
+                        }}
                       >
                         {item}
                       </p>
