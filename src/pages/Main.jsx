@@ -2,8 +2,8 @@ import React, { useContext, useState } from "react";
 import { FileContext } from "../context/FileContext";
 import { Document, Page, pdfjs } from "react-pdf/dist/esm/entry.webpack5";
 import { keywords } from "../utils";
-import { Edit } from "@mui/icons-material";
-import { Alert, Button, Snackbar } from "@mui/material";
+import { Edit, ArrowBack } from "@mui/icons-material";
+import { Alert, Button, Snackbar, Tooltip } from "@mui/material";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
 
@@ -11,6 +11,7 @@ const Main = () => {
   const { pdf, extractedPdf } = useContext(FileContext);
   const [numPages, setNumPages] = useState(null);
   const [labelledData, setLabelledData] = useState([]);
+  const [output, setOutput] = useState(false);
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -31,28 +32,25 @@ const Main = () => {
   const mainArray = myArray?.map((str) => str.slice(1, -1).split(" ")); // converted each string in to array also removing " from beginning and ending
 
   const [selectedItems, setSelectedItems] = useState([]);
-  console.log(labelChip);
   const handleClick = (item, key) => {
     setOpenSnack(true);
 
     if (selectedItems?.includes(item)) {
       setSelectedItems(selectedItems?.filter((i) => i !== item));
-      setSelectedWords(selectedItems?.filter((i) => i !== item));
       setSelectedWordsKey(selectedWordsKey?.filter((i) => i !== key));
     } else {
       setSelectedItems([...selectedItems, item]);
-      setSelectedWords([...selectedWords, item]);
       setSelectedWordsKey([...selectedWordsKey, key]);
     }
   };
-
+  console.log(selectedWordsKey);
   const handleLabels = () => {
     const isLast = arrIndex >= keywords.length;
     setOpenSnack(false);
     if (!isLast) {
       setLabelledData((prevLabelledData) => [
         ...prevLabelledData,
-        { [labelChip]: checked ? selectedItems.join("") : null },
+        { [labelChip]: checked ? selectedItems.join(" ") : null },
       ]);
       if (!checked) {
         setChecked(true);
@@ -61,11 +59,15 @@ const Main = () => {
         setArrIndex((prevIndex) => prevIndex + 1);
         setLabelChip(keywords[arrIndex + 1].label);
         setSelectedItems([]);
+        setSelectedWords([...selectedWords, selectedWordsKey]);
+        setSelectedWordsKey([]);
       } else {
         setLabelChip(null);
       }
     }
   };
+
+  console.log(selectedWords.flat());
 
   const handleDelete = () => {
     setArrIndex(0);
@@ -73,6 +75,8 @@ const Main = () => {
     setLabelledData([]);
     setSelectedItems([]);
     setSelectedWordsKey([]);
+    setSelectedWords([]);
+    setOutput(false);
   };
 
   console.log(labelledData);
@@ -101,11 +105,21 @@ const Main = () => {
           </button>
         </Alert>
       </Snackbar>
-      {labelChip !== null ? (
+      {!output && (
         <div className="space-y-4 flex-[1.3]">
           {labelChip ? (
             <div className="border-[1.5px] border-blue-600 p-4 text-lg rounded-lg space-y-2 ">
-              Please Select <span className="font-medium">{labelChip}</span> in the below Content{" "}
+              <div className="flex justify-between items-center">
+                <p>
+                  Please Select <span className="font-medium">{labelChip}</span> in the below Content{" "}
+                </p>
+                <button
+                  className="bg-blue-600 font-medium  p-1 px-3 text-white rounded-md "
+                  onClick={() => setOutput(true)}
+                >
+                  Saved Labels
+                </button>
+              </div>
               <div>
                 <input
                   type="checkbox"
@@ -167,12 +181,19 @@ const Main = () => {
                         key={key}
                         className={`text-sm cursor-pointer hover:underline ${
                           isWordSelected && "bg-blue-500 text-white  hover:no-underline rounded-sm "
-                        }`}
+                        }
+                        ${
+                          selectedWords.flat().includes(key) &&
+                          " bg-gray-500 text-white hover:no-underline rounded-sm cursor-not-allowed"
+                        }
+                        
+                        `}
                         onClick={() => {
-                          if (!isWordSelected) {
+                          if (!selectedWords.flat().includes(key)) {
                             handleClick(item, key);
                           }
                         }}
+                        // onClick={() => handleClick(item, key)}
                       >
                         {item}
                       </p>
@@ -185,19 +206,25 @@ const Main = () => {
             )}
           </div>
         </div>
-      ) : (
+      )}{" "}
+      {output && (
         <div className="space-y-4 flex-1 bg-slate-200 rounded-lg p-4">
-          <h1 className="text-2xl font-medium text-center">Selected labels</h1>
+          <div>
+            <Tooltip title="Back to Labelling">
+              <ArrowBack onClick={() => setOutput(false)} className="cursor-pointer" />
+            </Tooltip>
+            <h1 className="text-2xl font-medium text-center">Selected labels</h1>
+          </div>
           <div className=" border border-gray-600 rounded-lg p-4 space-y-4">
             <h2 className="font-medium text-gray-800">Selected Invoice Labels</h2>
             <div className="space-y-4">
-              {labelledData.slice(0, 2).map((item, i) =>
+              {labelledData.slice(0, 5).map((item, i) =>
                 Object.entries(item).map(([key, value]) => (
                   <div className="space-y-6 text-white text-[15px] ">
                     <div className="space-x-4 flex justify-between max-w-xs">
                       <span className="bg-blue-600 p-1.5 px-2.5 rounded-md flex-1">{key}</span>
                       <span className="border border-gray-600 text-black p-1.5 px-2.5 rounded-md flex-1">
-                        {value ? value : "null"}
+                        {value ? value : ""}
                       </span>
                     </div>
                   </div>
@@ -206,13 +233,13 @@ const Main = () => {
             </div>
             <h2 className="font-medium text-gray-800">Selected Item Labels</h2>
             <div className="space-y-4">
-              {labelledData?.slice(2, keywords.length).map((item, i) =>
+              {labelledData?.slice(5, keywords.length).map((item, i) =>
                 Object.entries(item).map(([key, value]) => (
                   <div className="space-y-6 text-white text-[15px]">
                     <div className="space-x-4 flex justify-between max-w-xs">
                       <span className="bg-blue-600 p-1.5 px-2.5 rounded-md flex-1">{key}</span>
                       <span className="border border-gray-600 text-black p-1.5 px-2.5 rounded-md flex-1">
-                        {value ? value : "null"}
+                        {value ? value : ""}
                       </span>
                     </div>
                   </div>
